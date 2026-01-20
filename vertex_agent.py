@@ -9,10 +9,7 @@ import json
 # Suppress SDK warnings for cleaner demo logs
 warnings.filterwarnings("ignore")
 
-# --- PRODUCTION CONFIGURATION ---
-# PROJECT_ID = "pharma-agent-mvp" 
-# LOCATION = "us-central1"
-# SHEET_NAME = "Pharma_CRM_Database"
+
 
 SHEET_NAME = "Pharma_CRM_Database"
 SERVICE_ACCOUNT_FILE = "service_account.json"
