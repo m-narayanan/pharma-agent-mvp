@@ -1,0 +1,13 @@
+# Secrets - NEVER UPLOAD THESE
+service_account.json
+.env
+
+# Python junk
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE settings
+.vscode/
+"*.csv" 

@@ -1,0 +1,6 @@
+google-cloud-aiplatform
+gspread
+oauth2client
+streamlit
+pandas
+plotly
