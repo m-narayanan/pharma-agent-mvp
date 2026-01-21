@@ -5,8 +5,7 @@ import vertex_agent
 import time
 from datetime import datetime
 
-# --- APP CONFIGURATION ---
-# Must be the very first command
+# --- CONFIG ---
 try:
     im = Image.open(r"logo.png") 
     page_icon = im
@@ -38,34 +37,32 @@ if 'date_val' not in st.session_state:
 # --- HELPER FUNCTIONS ---
 
 def start_new_call_logic():
-    """Resets everything for a fresh start."""
+    """Resets everything """
     st.session_state['current_call_id'] = vertex_agent.get_next_call_id()
     st.session_state['hcp_id_val'] = "HCP_00"
     st.session_state['note_val'] = ""
     st.session_state['date_val'] = datetime.now()
     
-    # Reveal the UI
+    
     st.session_state['call_active'] = True 
-    # Unlock the button
+    
     st.session_state['is_submitted'] = False 
-    # Clear old results
+    
     st.session_state.pop('last_result', None) 
 
 def on_field_change():
     """
-    Callback: If the user edits ANY field (HCP, Date, Notes), 
-    we unlock the submit button to allow an update.
+    Callback: If the user edits ANY field (HCP, Date, Notes), we unlock the submit button to allow an update.
     """
     if st.session_state['call_active']:
         st.session_state['is_submitted'] = False
 
-# --- SIDEBAR ---
 with st.sidebar:
-    st.image("https://www.gstatic.com/images/branding/product/2x/vertex_ai_512dp.png", width=40)
+    st.image(r"logo.png", width=40)
     st.header("Field Configuration")
     st.markdown("---")
     
-    st.markdown("### 👤 User Profile")
+    st.markdown("### User Profile")
     rep_name = st.text_input("Rep Name", value="Sarah Jenkins")
     rep_id = st.text_input("Rep ID", value="REP_048")
     territory = st.text_input("Territory", value="Northeast - Oncology")
@@ -73,7 +70,7 @@ with st.sidebar:
     st.markdown("---")
     
     # MAIN TRIGGER BUTTON
-    if st.button("📝 Start New Call", type="secondary", use_container_width=True):
+    if st.button(" Start New Call", type="secondary", use_container_width=True):
         start_new_call_logic()
         st.rerun()
 
@@ -85,16 +82,15 @@ st.markdown("---")
 # --- VISIBILITY GATE ---
 # If call_active is False (First Load), we show instructions and STOP rendering the rest.
 if not st.session_state['call_active']:
-    st.info("👈 **Action Required:** Please click 'Start New Call' in the sidebar to begin.")
+    st.info(" **Action Required:** Please click 'Start New Call' in the sidebar to begin.")
     st.stop() # This halts the script here, hiding everything below.
 
-# =========================================================
+
 # EVERYTHING BELOW THIS LINE IS HIDDEN UNTIL BUTTON CLICKED
-# =========================================================
 
 # Input Form Container
 with st.container():
-    st.subheader("📞 Call Details")
+    st.subheader("Call Details")
     
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -110,12 +106,11 @@ with st.container():
     raw_note = st.text_area("Visit Notes / Dictation", height=150, 
                            placeholder="Type notes here...", key="note_val", on_change=on_field_change)
 
-    # BUTTON STATE LOGIC
-    # Disabled if submitted=True AND user hasn't edited anything yet
+    # BUTTON STATE Disabled if submitted=True AND user hasn't edited anything yet
     btn_disabled = st.session_state['is_submitted']
     
     # Label changes to indicate what will happen
-    btn_label = "🔄 Update Record" if st.session_state.get('last_result') else "⚡ Process & Sync Call"
+    btn_label = " Update Record" if st.session_state.get('last_result') else "⚡ Process & Sync Call"
     
     if st.button(btn_label, type="primary", use_container_width=True, disabled=btn_disabled):
         
@@ -162,26 +157,26 @@ if 'last_result' in st.session_state:
     
     # 1. Coaching Section
     with st.container(border=True):
-        st.markdown("#### 👨‍🏫 Manager Coaching Tip")
+        st.markdown("####  Manager Coaching Tip")
         st.info(f"{res.get('coaching_tip')}")
         
         c_risk, c_sent = st.columns(2)
         with c_risk:
             if res.get("compliance_flag") == "TRUE":
-                st.error("🚨 COMPLIANCE ALERT: Risk Detected")
+                st.error(" COMPLIANCE ALERT: Risk Detected")
                 st.caption("Review notes for off-label claims or adverse events.")
             else:
-                st.success("🛡️ Compliance Check: PASSED")
+                st.success(" Compliance Check: PASSED")
         with c_sent:
             st.metric("HCP Sentiment", res.get("hcp_sentiment"))
 
     # 2. Action & Summary
     c_action, c_summary = st.columns(2)
     with c_action:
-        st.markdown("#### 🎯 Next Best Action")
+        st.markdown("####  Next Best Action")
         st.success(res.get("next_best_action"))
     with c_summary:
-        st.markdown("#### 📄 Executive Summary")
+        st.markdown("####  Executive Summary")
         st.text_area("AI Summary", value=res.get("summary"), height=100, disabled=True, label_visibility="collapsed")
 
     # 3. DATABASE VIEW
