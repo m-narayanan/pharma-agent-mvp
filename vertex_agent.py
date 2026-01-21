@@ -6,7 +6,6 @@ from vertexai.generative_models import GenerativeModel, Tool, FunctionDeclaratio
 import warnings
 import json 
 
-# Suppress SDK warnings for cleaner demo logs
 warnings.filterwarnings("ignore")
 
 
@@ -15,25 +14,48 @@ SHEET_NAME = "Pharma_CRM_Database"
 SERVICE_ACCOUNT_FILE = "service_account.json"
 MODEL_NAME = "gemini-2.0-flash-lite-001" 
 
+LOCATION = "us-central1" 
+
+# DYNAMIC PROJECT ID LOADER
 try:
+    # Local Development 
     with open(SERVICE_ACCOUNT_FILE, "r") as f:
         key_data = json.load(f)
         PROJECT_ID = key_data.get("project_id")
-        LOCATION = key_data.get("location")
-        print(f"✅ Loaded Configuration for Project: {PROJECT_ID}")
+        print(f"Loaded Local Configuration for Project: {PROJECT_ID}")
+
 except FileNotFoundError:
-    print("❌ CRITICAL ERROR: service_account.json not found.")
-    print("   Please ask the admin for the key or generate one in Google Cloud.")
+    # Cloud Production (Auto-Discovery)
+    print("service_account.json not found. Attempting Cloud Identity...")
+    try:
+        # This asks the Cloud Run environment for its own Project ID
+        _, project_id = google.auth.default()
+        PROJECT_ID = project_id
+        print(f"Auto-Detected Cloud Project: {PROJECT_ID}")
+    except Exception as e:
+        print(f"CRITICAL ERROR: Could not determine Project ID. {e}")
+        PROJECT_ID = None
 
 # --- CONNECTION MANAGER ---
 def get_crm_sheet():
     """Establishes secure connection to Google Sheets CRM."""
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    
     try:
-        creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+        # Local Development (JSON Key)
+        if os.path.exists("service_account.json"):
+            creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+        
+        # Cloud Production (Default Application Credentials)
+        else:
+            # uses the machine's internal identity (Cloud Run Identity)
+            creds, _ = google.auth.default(scopes=scope)
+
         client = gspread.authorize(creds)
         return client.open(SHEET_NAME).sheet1
+        
     except Exception as e:
+        print(f"Auth Error: {e}")
         return None
 
 # --- UTILITY: ID GENERATOR ---
